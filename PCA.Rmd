@@ -6,7 +6,7 @@ editor_options:
 ---
 #import data and explore them
 ```{r}
-data = read.table("decathlon.txt",header = TRUE)
+data = read.table("dnd_monsters.txt",header = TRUE)
 summary(data)
 ```
 
@@ -95,5 +95,8 @@ abline(h = point[2], col = "green")
 ```
 
 
+```{r}
+library(factoextra)
+```
 
 
