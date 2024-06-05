@@ -4,18 +4,96 @@ output: html_notebook
 editor_options: 
   chunk_output_type: inline
 ---
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
+#import data and explore them
 ```{r}
-plot(cars)
+data = read.table("decathlon.txt",header = TRUE)
+summary(data)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+data <- subset(data, select = -c(1:2))
+```
+
+# do the data need to be tweaked?
+## variance
+if the varinaces differ too much we could scale the data
+```{r}
+x = sapply(data,var)
+print(max(x))
+print(min(x))
+```
+## means
+if the means differ too we could center the data
+```{r}
+x = sapply(data,mean)
+print(max(x))
+print(min(x))
+```
+## if the distributions are not normal we can log the data
+```{r}
+x = sapply(data,shapiro.test)
+x
+```
+
+# perform PCA
+```{r}
+pca <- prcomp(data, center = TRUE, scale = TRUE)
+summary(pca)
+```
+## show variance
+```{r}
+pca$sd #variance explined
+pca$center #means subtracted during centering
+pca$scale #scaling applied during scaling
+```
+
+```{r}
+pca.explainedVar = cumsum(pca$sd^2 / sum(pca$sd^2 ))
+plot(pca.explainedVar,
+      type = "b", # type of line
+      xlab = "Number of components", 
+      ylab = "Cumulative variance explained (%)",
+      main = "Cumulative variance explained")
+abline(h = 0.9, col = "red")
+```
+# loadings
+```{r}
+#Loadings:
+# coefficients of the linear combination of the original variables that defines each principal component
+pca$rotation
+```
+```{r}
+pca.loadings = pca$rotation
+pca.loadings[,"PC1"]
+barplot(pca.loadings[,"PC1"])
+```
+
+# scores
+```{r}
+pca$x
+# predict(pca) is also a possible command
+```
+#plot
+```{r}
+biplot(pca)
+```
+
+
+# project a point in the space
+```{r}
+# transofrm data to the new space
+point = predict(pca,data[1,])
+point = subset(point,select = c(1,2))
+point
+```
+```{r}
+biplot(pca)
+abline(v = point[1], col = "red")
+abline(h = point[2], col = "green")
+```
+
+
+
 
