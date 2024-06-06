@@ -1,0 +1,100 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r}
+species.name <- iris[,5]
+Data        <- iris[,1:4]
+plot(Data, pch=19)
+```
+
+
+
+# Hierarchical Clustering
+```{r}
+Data.e = dist(Data, method="euclidean")
+Data.es = hclust(Data.e, method='single')
+coph.es <- cophenetic(Data.es)
+es <- cor(Data.e, coph.es)
+```
+
+
+## different Distance and Linking Methods
+
+##Distances type
+```{r}
+distance = c("euclidean", "maximum", "manhattan", "canberra", "binary" , "minkowski")
+```
+
+
+
+##Linkage type
+```{r}
+linking = c('single','complete','average','ward.D2')
+```
+*single*
+*complete*
+*average*
+*ward.D2* Ward-Linkage (see J-W p. 692-693): 
+Ward considered hierarchical clustering procedures based on minimizing the
+'loss of information' from joining two groups. This method is usually implemented
+with loss of information taken to be an increase in an error sum of squares 
+criterion, ESS. First for a given cluster k, let ESS[k] be the sum of the
+squared deviations of every item in the cluster from the cluster mean (centroid).
+(ESS[k]=sum_{x.j in cluster k} t(x.j-x.mean[k])%*%(x.j-x.mean[k]), where 
+x.mean[k] is the centroid of cluster k).
+If there are currently K clusterts, define ESS as the sum of the ESS[k] 
+(ESS=ESS[1]+ESS[2]+...+ESS[K]). At each step in the analysis, the union of
+every possible pair of clusters is considered, and the two clusters whose 
+combination results in the smallest increase in ESS (minimum loss of information)
+are joined. 
+Initially, each cluster consists of a single item and, if there are N items, 
+ESS[k]=0, k=1,2,...,N, so ESS=0. At the other extreme, when all the clusters are 
+combined in a single group of N items, the value of ESS is given by
+ESS=sum_j(t(x.j-x.mean)%*%(x.j-x.mean)), where x.j is the multivariate measurement
+associated with the jth item and x.mean is the mean of all items.
+##chose distance and method
+```{r}
+i = 1
+j = 1
+Data.dist = dist(Data, method=distance[i])
+Data.hc = hclust(Data.dist, method=linking[j])
+
+coph <- cophenetic(Data.hc)
+image(as.matrix(coph), main='Single', asp=1 )
+es <- cor(Data.dist, coph)
+```
+```{r}
+cat("cophonetic value of ", es , "of hist with ",distance[i], "distance and ",linking[j], " linking")
+```
+
+##choose number of clusters
+```{r}
+n_clust_hc = 2
+```
+
+
+```{r}
+plot(Data.hc, main=paste(distance[i], linking[j], sep="-"), hang=-0.1, xlab='', labels=F, cex=0.6, sub='')
+rect.hclust(Data.hc, k = n_clust_hc) 
+```
+```{r}
+cluster.hc <- cutree(Data.hc, k=n_clust_hc) # euclidean-complete:
+plot(Data, col=cluster.hc,
+     pch=19,main=paste(distance[i], linking[j], sep="-"))
+```
+
+```{r}
+x = cmdscale(Data.dist, k = n_clust_hc)
+plot(x[,1], x[,2], type='n', asp=1, axes=FALSE, main=paste(distance[i], linking[j], sep="-"),xlab='',ylab='')
+text(x[,1], x[,2], labels=colnames(as.matrix(Data.dist)), cex = 0.75, pos = 3,  col=cluster.hc)
+```
+
+
+
+# 
+
